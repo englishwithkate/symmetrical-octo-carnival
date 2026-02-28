@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan Orange — Europe Direct</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --ink: #1a1a2e;
+            --paper: #f5f0e8;
+            --warm: #e8dcc8;
+            --muted: #7a7060;
+            --orange: #d4691e;
+            --gold: #d4a017;
+            --teal: #2a7f7f;
+            --green: #3a7d44;
+            --blue: #2d5fa6;
+            --purple: #6b4c9a;
+            --red: #c84b31;
+            --france: #b8355a;
+            --albania: #1e7a8a;
+        }
+
+        body {
+            background: var(--paper);
+            color: var(--ink);
+            font-family: 'DM Sans', sans-serif;
+            padding: 40px 20px;
+            min-height: 100vh;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(180,160,120,0.12) 27px, rgba(180,160,120,0.12) 28px);
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .header {
+            border-top: 4px solid var(--ink);
+            border-bottom: 2px solid var(--ink);
+            padding: 20px 0 16px;
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .header h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 52px;
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+
+        .header .subtitle {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 6px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .status-pill {
+            display: inline-block;
+            color: white;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border-radius: 2px;
+            background: var(--orange);
+        }
+
+        .decision-bar {
+            background: var(--ink);
+            color: var(--paper);
+            padding: 18px 24px;
+            margin-bottom: 28px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            border-left: 6px solid var(--orange);
+        }
+
+        .decision-bar .dl-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            color: var(--gold);
+        }
+
+        .decision-bar .dl-text {
+            font-family: 'DM Serif Display', serif;
+            font-size: 17px;
+            font-style: italic;
+            line-height: 1.4;
+        }
+
+        .gantt-wrapper {
+            background: white;
+            border: 1.5px solid rgba(26,26,46,0.12);
+            margin-bottom: 28px;
+            overflow-x: auto;
+        }
+
+        .gantt-header-row {
+            display: grid;
+            grid-template-columns: 200px repeat(14, 1fr);
+            border-bottom: 2px solid var(--ink);
+            background: var(--ink);
+            color: var(--paper);
+        }
+
+        .gantt-header-row .task-col {
+            padding: 10px 16px;
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold);
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .gantt-header-row .month-col {
+            padding: 10px 6px;
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-align: center;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .gantt-header-row .month-col.hinge { background: var(--gold); color: var(--ink); }
+        .gantt-header-row .month-col.fcol { background: rgba(184,53,90,0.35); }
+        .gantt-header-row .month-col.acol { background: rgba(30,122,138,0.35); }
+
+        .gantt-section-label {
+            grid-column: 1 / -1;
+            padding: 8px 16px;
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            background: var(--warm);
+            border-bottom: 1px solid rgba(26,26,46,0.1);
+        }
+
+        .gantt-section-label.fs { color: var(--france); background: #fce8ed; }
+        .gantt-section-label.as { color: var(--albania); background: #e3f2f5; }
+        .gantt-section-label.ss { color: #7a6010; background: #fdf3d0; }
+
+        .gantt-row {
+            display: grid;
+            grid-template-columns: 200px repeat(14, 1fr);
+            border-bottom: 1px solid rgba(26,26,46,0.08);
+            min-height: 44px;
+        }
+
+        .gantt-row:hover { background: rgba(26,26,46,0.02); }
+
+        .gantt-task {
+            padding: 10px 16px;
+            font-size: 12px;
+            line-height: 1.4;
+            color: var(--ink);
+            border-right: 1px solid rgba(26,26,46,0.08);
+            display: flex;
+            align-items: center;
+        }
+
+        .gantt-task .task-name { font-weight: 500; display: block; }
+        .gantt-task .task-sub {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            color: var(--muted);
+            letter-spacing: 0.5px;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .gantt-cell {
+            border-right: 1px solid rgba(26,26,46,0.06);
+            padding: 6px 3px;
+            display: flex;
+            align-items: center;
+        }
+
+        .gantt-cell.hinge-col { background: rgba(212,160,23,0.08); border-right: 1px solid rgba(212,160,23,0.3); }
+        .gantt-cell.fb { background: rgba(184,53,90,0.03); }
+        .gantt-cell.ab { background: rgba(30,122,138,0.03); }
+
+        .bar { height: 20px; border-radius: 2px; width: 100%; }
+        .bar-start { border-radius: 2px 0 0 2px; }
+        .bar-mid { border-radius: 0; }
+        .bar-end { border-radius: 0 2px 2px 0; }
+        .bar-full { border-radius: 2px; }
+
+        .bar.orange { background: var(--orange); }
+        .bar.gold { background: var(--gold); }
+        .bar.teal { background: var(--teal); }
+        .bar.green { background: var(--green); }
+        .bar.blue { background: var(--blue); }
+        .bar.purple { background: var(--purple); }
+        .bar.france { background: var(--france); }
+        .bar.albania { background: var(--albania); }
+        .bar.muted { background: var(--muted); opacity: 0.4; }
+
+        .milestone {
+            width: 20px; height: 20px;
+            background: var(--orange);
+            transform: rotate(45deg);
+            margin: auto; flex-shrink: 0;
+        }
+        .milestone.gold { background: var(--gold); }
+        .milestone.france { background: var(--france); }
+        .milestone.albania { background: var(--albania); }
+        .milestone.teal { background: var(--teal); }
+
+        .questions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .q-card {
+            background: white;
+            border: 1.5px solid rgba(26,26,46,0.12);
+            padding: 18px;
+            position: relative;
+        }
+
+        .q-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px; height: 100%;
+        }
+
+        .q-card.orange::before { background: var(--orange); }
+        .q-card.gold::before { background: var(--gold); }
+        .q-card.teal::before { background: var(--teal); }
+        .q-card.blue::before { background: var(--blue); }
+        .q-card.france::before { background: var(--france); }
+        .q-card.purple::before { background: var(--purple); }
+
+        .q-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .q-card h3 { font-family: 'DM Serif Display', serif; font-size: 17px; margin-bottom: 8px; }
+        .q-card p { font-size: 12px; line-height: 1.6; color: #3a3a3a; }
+
+        .tag {
+            display: inline-block;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 2px;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .tag.orange { background: #fdeede; color: var(--orange); border: 1px solid var(--orange); }
+        .tag.gold { background: #fdf3d0; color: #8a6d0a; border: 1px solid var(--gold); }
+        .tag.teal { background: #dff0f0; color: var(--teal); border: 1px solid var(--teal); }
+        .tag.blue { background: #e0eaf8; color: var(--blue); border: 1px solid var(--blue); }
+        .tag.france { background: #fce8ed; color: var(--france); border: 1px solid var(--france); }
+        .tag.purple { background: #ede8f5; color: var(--purple); border: 1px solid var(--purple); }
+
+        .section-divider {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--muted);
+            border-top: 1px solid rgba(26,26,46,0.15);
+            padding-top: 14px;
+            margin: 8px 0 18px;
+        }
+
+        .journal-strip {
+            border: 1.5px solid rgba(26,26,46,0.15);
+            background: var(--warm);
+            padding: 20px 24px;
+            margin-bottom: 18px;
+        }
+
+        .journal-strip .j-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        .journal-strip p {
+            font-family: 'DM Serif Display', serif;
+            font-style: italic;
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--ink);
+        }
+
+        .footer {
+            border-top: 2px solid var(--ink);
+            padding-top: 14px;
+            margin-top: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-left { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+        .footer-right { font-family: 'DM Serif Display', serif; font-size: 14px; font-style: italic; color: var(--muted); }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding: 14px 16px;
+            background: var(--warm);
+            border-top: 1px solid rgba(26,26,46,0.1);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--muted);
+        }
+
+        .legend-bar { width: 24px; height: 10px; border-radius: 2px; }
+        .legend-diamond { width: 10px; height: 10px; transform: rotate(45deg); }
+
+        .key-strip {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            border: 1.5px solid rgba(26,26,46,0.12);
+            background: white;
+            margin-bottom: 28px;
+            overflow: hidden;
+        }
+
+        .ks-block {
+            padding: 14px 16px;
+            border-right: 1px solid rgba(26,26,46,0.1);
+        }
+        .ks-block:last-child { border-right: none; }
+        .ks-block.fo { border-top: 3px solid var(--orange); }
+        .ks-block.ff { border-top: 3px solid var(--france); }
+        .ks-block.fa { border-top: 3px solid var(--albania); }
+        .ks-block.fg { border-top: 3px solid var(--gold); }
+
+        .ks-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+
+        .ks-value {
+            font-family: 'DM Serif Display', serif;
+            font-size: 22px;
+            margin-bottom: 3px;
+        }
+
+        .ks-note { font-size: 11px; color: var(--muted); line-height: 1.4; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <div>
+            <h1>Plan Orange</h1>
+            <div class="subtitle">Europe Direct · France ⟷ Albania Rotation · May 2026 – May 2027</div>
+        </div>
+        <div class="status-pill">War Plan Orange</div>
+    </div>
+
+    <div class="decision-bar">
+        <div class="dl-label">Activation Condition</div>
+        <div class="dl-text">March 31 assessment: no upward trajectory on UI + sub teaching + Preply → give notice April 1 → wheels up early May. No Mexico bridge — South of France on day one.</div>
+    </div>
+
+    <div class="key-strip">
+        <div class="ks-block fo">
+            <div class="ks-label">Starting position (May 1)</div>
+            <div class="ks-value" style="color:var(--orange)">$10,000</div>
+            <div class="ks-note">March + April covered without touching savings. Wanda #1 adds ~$350 in May.</div>
+        </div>
+        <div class="ks-block ff">
+            <div class="ks-label">France phases (×2 · 90 days each)</div>
+            <div class="ks-value" style="color:var(--france)">~$0/mo net</div>
+            <div class="ks-note">Aliore $267 + misc $130. Preply $400 covers it entirely.</div>
+        </div>
+        <div class="ks-block fa">
+            <div class="ks-label">Albania phases (×2 · 90 days each)</div>
+            <div class="ks-value" style="color:var(--albania)">−$50/mo</div>
+            <div class="ks-note">Est. $450 burn, $400 Preply. Small draw. Non-Schengen clock reset.</div>
+        </div>
+        <div class="ks-block fg">
+            <div class="ks-label">Balance at SS activation</div>
+            <div class="ks-value" style="color:var(--gold)">~$9,821</div>
+            <div class="ks-note">After 12 months. Two Wanda payments (~$700) included.</div>
+        </div>
+        <div class="ks-block fg">
+            <div class="ks-label">SS activates May 2027</div>
+            <div class="ks-value" style="color:var(--gold)">$1,818/mo</div>
+            <div class="ks-note">Age 62. Locked in. Savings immediately reverse direction.</div>
+        </div>
+    </div>
+
+    <div class="gantt-wrapper">
+        <div class="gantt-header-row">
+            <div class="task-col">Task / Track</div>
+            <div class="month-col">MAR 26</div>
+            <div class="month-col">APR 26</div>
+            <div class="month-col fcol">MAY 26</div>
+            <div class="month-col fcol">JUN 26</div>
+            <div class="month-col fcol">JUL 26</div>
+            <div class="month-col fcol">AUG 26</div>
+            <div class="month-col acol">SEP 26</div>
+            <div class="month-col acol">OCT 26</div>
+            <div class="month-col acol">NOV 26</div>
+            <div class="month-col fcol">DEC 26</div>
+            <div class="month-col fcol">JAN 27</div>
+            <div class="month-col fcol">FEB 27</div>
+            <div class="month-col acol">MAR 27</div>
+            <div class="month-col acol">APR 27</div>
+            <div class="month-col hinge">MAY 27 ★</div>
+        </div>
+
+        <!-- PHASE 1 -->
+        <div class="gantt-section-label">Phase 1 — Colorado Wind-Down · Assessment · Departure Prep</div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Watch indicators</span><span class="task-sub">UI · sub teaching · Preply trajectory</span></div></div>
+            <div class="gantt-cell"><div class="bar orange bar-full"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Mar 31: Assessment</span><span class="task-sub">Go / No-Go · Orange vs. Purple</span></div></div>
+            <div class="gantt-cell" style="justify-content:center"><div class="milestone gold"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Isabelle: sell to enthusiast</span><span class="task-sub">Baby goes somewhere safe · Apr 15</span></div></div>
+            <div class="gantt-cell"><div class="bar orange bar-start"></div></div>
+            <div class="gantt-cell"><div class="bar orange bar-end"></div></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Book flight (Sky Miles)</span><span class="task-sub">CO → France · Marlène confirms</span></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"><div class="bar teal bar-full"></div></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Aliore placement confirmed</span><span class="task-sub">South of France · late May start</span></div></div>
+            <div class="gantt-cell"><div class="bar france bar-start"></div></div>
+            <div class="gantt-cell"><div class="bar france bar-end"></div></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Boxes: final sort + scan</span><span class="task-sub">200+ photos digitized · stub built</span></div></div>
+            <div class="gantt-cell"><div class="bar purple bar-start"></div></div>
+            <div class="gantt-cell"><div class="bar purple bar-mid"></div></div>
+            <div class="gantt-cell fb"><div class="bar purple bar-end" style="opacity:0.4"></div></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Apr 1: Give notice</span><span class="task-sub">If Orange activated</span></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell" style="justify-content:center"><div class="milestone"></div></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Confirm Tracy telehealth</span><span class="task-sub">Europe-compatible sessions</span></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"><div class="bar blue bar-full"></div></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <!-- PHASE 2: FRANCE RUN 1 -->
+        <div class="gantt-section-label fs">Phase 2 — France Homestay Run 1 · Schengen days 1–90 · May–Aug 2026</div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">★ Wheels up Colorado</span><span class="task-sub">Early May · land in France day one</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb" style="justify-content:center"><div class="milestone france"></div></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Aliore homestay active</span><span class="task-sub">South of France · $267/mo room+board</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb"><div class="bar france bar-start"></div></div>
+            <div class="gantt-cell fb"><div class="bar france bar-mid"></div></div>
+            <div class="gantt-cell fb"><div class="bar france bar-mid"></div></div>
+            <div class="gantt-cell fb"><div class="bar france bar-end"></div></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Teaching: Preply (full run)</span><span class="task-sub">European timezone · ~$400/mo throughout</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb"><div class="bar blue bar-start"></div></div>
+            <div class="gantt-cell fb"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell fb"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell fb"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell ab"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell ab"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell ab"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell fb"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell fb"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell fb"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell ab"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell ab"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell hinge-col"><div class="bar blue bar-end"></div></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Wanda payment #1</span><span class="task-sub">Web dev · ~$350</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb"><div class="bar gold bar-full"></div></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Aug: Schengen day 90 exit</span><span class="task-sub">Travel to Albania · clock stops</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell fb" style="justify-content:center"><div class="milestone albania"></div></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <!-- PHASE 3: ALBANIA RESET 1 -->
+        <div class="gantt-section-label as">Phase 3 — Albania Reset 1 · Non-Schengen · Clock Resets · Sep–Nov 2026</div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Albania: Tirana or coast</span><span class="task-sub">~$450/mo · non-Schengen · 90 days</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"><div class="bar albania bar-start"></div></div>
+            <div class="gantt-cell ab"><div class="bar albania bar-mid"></div></div>
+            <div class="gantt-cell ab"><div class="bar albania bar-end"></div></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">VLS-TS document prep</span><span class="task-sub">SS application research · paperwork gather</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"><div class="bar gold bar-start"></div></div>
+            <div class="gantt-cell ab"><div class="bar gold bar-mid"></div></div>
+            <div class="gantt-cell ab"><div class="bar gold bar-mid"></div></div>
+            <div class="gantt-cell fb"><div class="bar gold bar-mid"></div></div>
+            <div class="gantt-cell fb"><div class="bar gold bar-mid"></div></div>
+            <div class="gantt-cell fb"><div class="bar gold bar-mid"></div></div>
+            <div class="gantt-cell ab"><div class="bar gold bar-mid"></div></div>
+            <div class="gantt-cell ab"><div class="bar gold bar-end"></div></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Nov: Return to Schengen</span><span class="task-sub">Travel France · clock fully reset</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell ab" style="justify-content:center"><div class="milestone france"></div></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <!-- PHASE 4: FRANCE RUN 2 -->
+        <div class="gantt-section-label fs">Phase 4 — France Homestay Run 2 · Schengen days 1–90 · Dec 2026–Feb 2027</div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Aliore homestay Run 2</span><span class="task-sub">New placement · $267/mo · Schengen reset</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"><div class="bar france bar-start"></div></div>
+            <div class="gantt-cell fb"><div class="bar france bar-mid"></div></div>
+            <div class="gantt-cell fb"><div class="bar france bar-end"></div></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">SS application submitted</span><span class="task-sub">Remotely · US bank account active</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"><div class="bar teal bar-start"></div></div>
+            <div class="gantt-cell fb"><div class="bar teal bar-mid"></div></div>
+            <div class="gantt-cell fb"><div class="bar teal bar-end"></div></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Wanda payment #2</span><span class="task-sub">More web dev work · ~$350 · Feb 2027</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell fb"><div class="bar gold bar-full"></div></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Feb: Schengen day 90 exit</span><span class="task-sub">Travel to Albania · final buffer</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell fb" style="justify-content:center"><div class="milestone albania"></div></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <!-- PHASE 5: ALBANIA RESET 2 -->
+        <div class="gantt-section-label as">Phase 5 — Albania Reset 2 · Buffer · Hold for Social Security · Mar–Apr 2027</div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Albania: final buffer</span><span class="task-sub">Hold position · 2 months · SS incoming</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"><div class="bar albania bar-start"></div></div>
+            <div class="gantt-cell ab"><div class="bar albania bar-end"></div></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">Bank 3 months SS statements</span><span class="task-sub">VLS-TS application evidence · ready</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"><div class="bar green bar-full" style="opacity:0.5"></div></div>
+        </div>
+
+        <!-- PHASE 6: THE HINGE -->
+        <div class="gantt-section-label ss">Phase 6 — The Hinge · Social Security Activates · Permanent France System Begins</div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">★ SS activates (age 62)</span><span class="task-sub">$1,818/mo · locked in · cannot be taken away</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col" style="justify-content:center"><div class="milestone gold"></div></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task"><div><span class="task-name">VLS-TS France submitted + granted</span><span class="task-sub">~15 days processing · legal residence</span></div></div>
+            <div class="gantt-cell"></div><div class="gantt-cell"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell fb"></div><div class="gantt-cell fb"></div><div class="gantt-cell fb"></div>
+            <div class="gantt-cell ab"></div><div class="gantt-cell ab"></div>
+            <div class="gantt-cell hinge-col"><div class="bar france bar-full"></div></div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="legend-bar" style="background:var(--orange)"></div> Decision / Assessment</div>
+            <div class="legend-item"><div class="legend-bar" style="background:var(--france)"></div> France / Homestay</div>
+            <div class="legend-item"><div class="legend-bar" style="background:var(--albania)"></div> Albania / Reset</div>
+            <div class="legend-item"><div class="legend-bar" style="background:var(--blue)"></div> Teaching (Preply)</div>
+            <div class="legend-item"><div class="legend-bar" style="background:var(--gold)"></div> Financial / SS / Wanda</div>
+            <div class="legend-item"><div class="legend-bar" style="background:var(--teal)"></div> Logistics / Travel</div>
+            <div class="legend-item"><div class="legend-bar" style="background:var(--purple)"></div> The Boxes / Stub</div>
+            <div class="legend-item"><div class="legend-bar" style="background:var(--green)"></div> Visa / Legal</div>
+            <div class="legend-item"><div class="legend-diamond" style="background:var(--gold)"></div> Milestone</div>
+        </div>
+    </div>
+
+    <div class="section-divider">Open Questions — Plan Orange</div>
+
+    <div class="questions-grid">
+        <div class="q-card france">
+            <div class="q-label">Critical — Book Early</div>
+            <h3>Aliore Availability</h3>
+            <p>Need confirmed placement for late May 2026, South of France, before committing Orange over Red. Lead time matters. If first placement unavailable: different region or provider. Verify before April 1 assessment.</p>
+            <div class="tag france">Confirm by Mar 31</div>
+        </div>
+
+        <div class="q-card orange">
+            <div class="q-label">Asset Disposition</div>
+            <h3>Isabelle's Fate</h3>
+            <p>Margaret: pattern confirmed, dead air, off the table. DVR repair approved — she runs through March for mobility. If Orange activates: sell to Miata enthusiast by April 15. Grief but relief. Baby goes somewhere safe, not abandoned.</p>
+            <div class="tag orange">Miata Enthusiast · Apr 15</div>
+        </div>
+
+        <div class="q-card gold">
+            <div class="q-label">The Stub</div>
+            <h3>What Comes Forward</h3>
+            <p>Two checked bags + carry-on. Scan 200+ photos for digital backup — images preserved even as physical objects are released. The stub: not delete everything, a seed. What's in the stub is still being resolved through April.</p>
+            <div class="tag gold">Not Zero · A Seed</div>
+        </div>
+
+        <div class="q-card teal">
+            <div class="q-label">Research Needed</div>
+            <h3>Albania Logistics</h3>
+            <p>Albania burn estimated at $450/month — not confirmed. Tirana has expat infrastructure; coast cheaper, less connected. Currency, banking, accommodation not yet mapped. Research before April 1 so the number isn't a guess.</p>
+            <div class="tag teal">Research · March 2026</div>
+        </div>
+
+        <div class="q-card blue">
+            <div class="q-label">Income Confidence</div>
+            <h3>Preply in European TZ</h3>
+            <p>Victor (Barcelona), Emma (France), Mikhail (Azerbaijan) already on European time. Profile currently hidden — reopen in March, build back toward 13–15 students. Timezone friction removed once in France. Teaching income should hold or grow.</p>
+            <div class="tag blue">Reopen Profile · March</div>
+        </div>
+
+        <div class="q-card gold">
+            <div class="q-label">Visa Target</div>
+            <h3>VLS-TS France</h3>
+            <p>€1,823/month income requirement. SS $1,818/month clears it at current rates — watch EUR/USD. Processing ~15 days. Application window: after 3 months of SS statements banked. August 2027 earliest realistic submission.</p>
+            <div class="tag gold">France · Aug 2027</div>
+        </div>
+    </div>
+
+    <div class="journal-strip">
+        <div class="j-label">The Logic of Plan Orange</div>
+        <p>"You need to go back to Paris." Karen knew. Victor knows. Emma heard the accent and called it sweet. Orange skips the bridge entirely — South of France on day one, rotating out to Albania to reset the clock, back to France, until Social Security arrives in May 2027 and the permanent machine can finally be built in the place you actually belong. No intermediate country. No caretaking. You land where you want to be from the very first morning.</p>
+    </div>
+
+    <div class="footer">
+        <div class="footer-left">Plan Orange · War Plan Series · Generated Feb 27, 2026 · Loveland CO</div>
+        <div class="footer-right">Assessment: March 31. Notice: April 1. Wheels up: May.</div>
+    </div>
+
+</div>
+</body>
+</html>
