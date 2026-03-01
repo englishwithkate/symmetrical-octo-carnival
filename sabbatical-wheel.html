@@ -831,7 +831,7 @@ function populateTodayCard(info, today) {
 
     document.getElementById('wheelLabel').textContent = `Today's Position · ${formatDate(today)}`;
     document.getElementById('tcHouse').textContent = `House of ${h.name}`;
-    document.getElementById('tcPhase').textContent = `${info.isRising ? 'Rising' : 'Falling'} · Day ${info.dayIn} of ${info.totalDays}`;
+    document.getElementById('tcPhase').textContent = `${info.isRising ? 'Rising' : 'Falling'} · Day ${info.dayIn} of ${info.totalDays} · ${lightCount}`;
 
     const sabbatDateEl = document.getElementById('tcSabbatDate');
     sabbatDateEl.textContent = formatDate(b.sabbat);
@@ -869,10 +869,39 @@ function populateTodayCard(info, today) {
     }
 }
 
+// ─── INCREASE / DECREASE COUNT ───────────────────────────────────────────────
+
+function getLightCount(date) {
+    const year = date.getFullYear();
+    const yule = new Date(year - 1, 11, 21); // prev Dec 21
+    const litha = new Date(year, 5, 21);      // this Jun 21
+    const yule_next = new Date(year, 11, 21); // this Dec 21
+
+    const msDay = 86400000;
+
+    if (date >= yule && date < litha) {
+        const count = Math.floor((date - yule) / msDay) + 1;
+        return `Increase ${count}`;
+    } else if (date >= litha && date < yule_next) {
+        const count = Math.floor((date - litha) / msDay) + 1;
+        return `Decrease ${count}`;
+    } else {
+        // After Dec 21 of current year
+        const count = Math.floor((date - yule_next) / msDay) + 1;
+        return `Increase ${count}`;
+    }
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 
 const today = new Date();
 const refYear = today.getFullYear();
+const lightCount = getLightCount(today);
+
+// Update header subtitle
+document.querySelector('.header .sub').textContent =
+    `Astronomical · ${refYear} · Sabbatical Houses · ${lightCount}`;
+
 const info = getCurrentHouse(today);
 
 // Main wheel
