@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan Red — Mexico Bridge to Europe</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --ink: #1a1a2e;
+            --paper: #f5f0e8;
+            --warm: #e8dcc8;
+            --muted: #7a7060;
+            --red: #c84b31;
+            --gold: #d4a017;
+            --teal: #2a7f7f;
+            --green: #3a7d44;
+            --blue: #2d5fa6;
+            --purple: #6b4c9a;
+            --orange: #d4691e;
+        }
+
+        body {
+            background: var(--paper);
+            color: var(--ink);
+            font-family: 'DM Sans', sans-serif;
+            padding: 40px 20px;
+            min-height: 100vh;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(180,160,120,0.12) 27px, rgba(180,160,120,0.12) 28px);
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .header {
+            border-top: 4px solid var(--ink);
+            border-bottom: 2px solid var(--ink);
+            padding: 20px 0 16px;
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .header h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 52px;
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+
+        .header .subtitle {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 6px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .status-pill {
+            display: inline-block;
+            color: white;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border-radius: 2px;
+            background: var(--red);
+        }
+
+        .decision-bar {
+            background: var(--ink);
+            color: var(--paper);
+            padding: 18px 24px;
+            margin-bottom: 28px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            border-left: 6px solid var(--red);
+        }
+
+        .decision-bar .dl-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            color: var(--red);
+        }
+
+        .decision-bar .dl-text {
+            font-family: 'DM Serif Display', serif;
+            font-size: 17px;
+            font-style: italic;
+            line-height: 1.4;
+        }
+
+        /* GANTT */
+        .gantt-wrapper {
+            background: white;
+            border: 1.5px solid rgba(26,26,46,0.12);
+            margin-bottom: 28px;
+            overflow-x: auto;
+        }
+
+        .gantt-header-row {
+            display: grid;
+            grid-template-columns: 200px repeat(13, 1fr);
+            border-bottom: 2px solid var(--ink);
+            background: var(--ink);
+            color: var(--paper);
+        }
+
+        .gantt-header-row .task-col {
+            padding: 10px 16px;
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold);
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .gantt-header-row .month-col {
+            padding: 10px 6px;
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-align: center;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .gantt-header-row .month-col.hinge {
+            background: var(--red);
+            color: white;
+        }
+
+        .gantt-section-label {
+            grid-column: 1 / -1;
+            padding: 8px 16px;
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            background: var(--warm);
+            border-bottom: 1px solid rgba(26,26,46,0.1);
+        }
+
+        .gantt-row {
+            display: grid;
+            grid-template-columns: 200px repeat(13, 1fr);
+            border-bottom: 1px solid rgba(26,26,46,0.08);
+            min-height: 44px;
+        }
+
+        .gantt-row:hover {
+            background: rgba(26,26,46,0.02);
+        }
+
+        .gantt-task {
+            padding: 10px 16px;
+            font-size: 12px;
+            line-height: 1.4;
+            color: var(--ink);
+            border-right: 1px solid rgba(26,26,46,0.08);
+            display: flex;
+            align-items: center;
+        }
+
+        .gantt-task .task-name {
+            font-weight: 500;
+            display: block;
+        }
+
+        .gantt-task .task-sub {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            color: var(--muted);
+            letter-spacing: 0.5px;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .gantt-cell {
+            border-right: 1px solid rgba(26,26,46,0.06);
+            padding: 6px 3px;
+            display: flex;
+            align-items: center;
+        }
+
+        .gantt-cell.hinge-col {
+            background: rgba(200,75,49,0.04);
+            border-right: 1px solid rgba(200,75,49,0.2);
+        }
+
+        .bar {
+            height: 20px;
+            border-radius: 2px;
+            width: 100%;
+            position: relative;
+        }
+
+        .bar-start { border-radius: 2px 0 0 2px; }
+        .bar-mid { border-radius: 0; }
+        .bar-end { border-radius: 0 2px 2px 0; }
+        .bar-full { border-radius: 2px; }
+
+        .bar.red { background: var(--red); }
+        .bar.gold { background: var(--gold); }
+        .bar.teal { background: var(--teal); }
+        .bar.green { background: var(--green); }
+        .bar.blue { background: var(--blue); }
+        .bar.purple { background: var(--purple); }
+        .bar.orange { background: var(--orange); }
+        .bar.muted { background: var(--muted); opacity: 0.4; }
+
+        .milestone {
+            width: 20px;
+            height: 20px;
+            background: var(--red);
+            transform: rotate(45deg);
+            margin: auto;
+            flex-shrink: 0;
+        }
+
+        .milestone.gold { background: var(--gold); }
+        .milestone.green { background: var(--green); }
+        .milestone.teal { background: var(--teal); }
+
+        /* OPEN QUESTIONS */
+        .questions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .q-card {
+            background: white;
+            border: 1.5px solid rgba(26,26,46,0.12);
+            padding: 18px;
+            position: relative;
+        }
+
+        .q-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px; height: 100%;
+        }
+
+        .q-card.red::before { background: var(--red); }
+        .q-card.gold::before { background: var(--gold); }
+        .q-card.orange::before { background: var(--orange); }
+        .q-card.purple::before { background: var(--purple); }
+        .q-card.teal::before { background: var(--teal); }
+        .q-card.blue::before { background: var(--blue); }
+
+        .q-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .q-card h3 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 17px;
+            margin-bottom: 8px;
+        }
+
+        .q-card p {
+            font-size: 12px;
+            line-height: 1.6;
+            color: #3a3a3a;
+        }
+
+        .tag {
+            display: inline-block;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 2px;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .tag.red { background: #fde8e4; color: var(--red); border: 1px solid var(--red); }
+        .tag.gold { background: #fdf3d0; color: #8a6d0a; border: 1px solid var(--gold); }
+        .tag.orange { background: #fdeede; color: var(--orange); border: 1px solid var(--orange); }
+        .tag.teal { background: #dff0f0; color: var(--teal); border: 1px solid var(--teal); }
+
+        .section-divider {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--muted);
+            border-top: 1px solid rgba(26,26,46,0.15);
+            padding-top: 14px;
+            margin: 8px 0 18px;
+        }
+
+        .journal-strip {
+            border: 1.5px solid rgba(26,26,46,0.15);
+            background: var(--warm);
+            padding: 20px 24px;
+            margin-bottom: 18px;
+        }
+
+        .journal-strip .j-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        .journal-strip p {
+            font-family: 'DM Serif Display', serif;
+            font-style: italic;
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--ink);
+        }
+
+        .footer {
+            border-top: 2px solid var(--ink);
+            padding-top: 14px;
+            margin-top: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-left {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .footer-right {
+            font-family: 'DM Serif Display', serif;
+            font-size: 14px;
+            font-style: italic;
+            color: var(--muted);
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding: 14px 16px;
+            background: var(--warm);
+            border-top: 1px solid rgba(26,26,46,0.1);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--muted);
+        }
+
+        .legend-bar {
+            width: 24px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        .legend-diamond {
+            width: 10px;
+            height: 10px;
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <div>
+            <h1>Plan Red</h1>
+            <div class="subtitle">Mexico Bridge → Europe · March 2026 – Summer 2027</div>
+        </div>
+        <div class="status-pill">War Plan Red</div>
+    </div>
+
+    <div class="decision-bar">
+        <div class="dl-label">Activation Condition</div>
+        <div class="dl-text">March 31 assessment: no upward trajectory on UI + sub teaching + Preply → give notice April 1 → wheels up early May</div>
+    </div>
+
+    <!-- GANTT CHART -->
+    <div class="gantt-wrapper">
+        <div class="gantt-header-row">
+            <div class="task-col">Task</div>
+            <div class="month-col">MAR<br>26</div>
+            <div class="month-col">APR<br>26</div>
+            <div class="month-col">MAY<br>26</div>
+            <div class="month-col">JUN<br>26</div>
+            <div class="month-col">JUL<br>26</div>
+            <div class="month-col">AUG<br>26</div>
+            <div class="month-col">SEP<br>26</div>
+            <div class="month-col">OCT<br>26</div>
+            <div class="month-col">NOV<br>26</div>
+            <div class="month-col">DEC<br>26</div>
+            <div class="month-col">JAN<br>27</div>
+            <div class="month-col">FEB<br>27</div>
+            <div class="month-col hinge">MAY<br>27 ★</div>
+        </div>
+
+        <!-- PHASE 1: COLORADO WIND-DOWN -->
+        <div class="gantt-section-label">Phase 1 — Colorado Wind-Down</div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Watch indicators</span>
+                    <span class="task-sub">UI · sub teaching · Preply</span>
+                </div>
+            </div>
+            <div class="gantt-cell"><div class="bar red bar-full"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Mar 31: Assessment</span>
+                    <span class="task-sub">Go / No-Go decision</span>
+                </div>
+            </div>
+            <div class="gantt-cell" style="justify-content:center"><div class="milestone gold"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Isabelle: decide fate</span>
+                    <span class="task-sub">Miata enthusiast by Apr 15</span>
+                </div>
+            </div>
+            <div class="gantt-cell"><div class="bar orange bar-start"></div></div>
+            <div class="gantt-cell"><div class="bar orange bar-end"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Confirm Ariel viable</span>
+                    <span class="task-sub">One honest conversation</span>
+                </div>
+            </div>
+            <div class="gantt-cell"><div class="bar gold bar-full"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Confirm Marlène Sky Miles</span>
+                    <span class="task-sub">Real + bookable</span>
+                </div>
+            </div>
+            <div class="gantt-cell"><div class="bar gold bar-full"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">The Boxes: final sort</span>
+                    <span class="task-sub">Scan photos · build stub</span>
+                </div>
+            </div>
+            <div class="gantt-cell"><div class="bar purple bar-start"></div></div>
+            <div class="gantt-cell"><div class="bar purple bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar purple bar-end" style="opacity:0.5"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Apr 1: Give notice</span>
+                    <span class="task-sub">If Red activated</span>
+                </div>
+            </div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell" style="justify-content:center"><div class="milestone"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Book ticket (Sky Miles)</span>
+                    <span class="task-sub">CO → Mexico City</span>
+                </div>
+            </div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"><div class="bar teal bar-full"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Confirm Tracy telehealth</span>
+                    <span class="task-sub">Mexico-compatible sessions</span>
+                </div>
+            </div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"><div class="bar blue bar-full"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <!-- PHASE 2: MEXICO -->
+        <div class="gantt-section-label">Phase 2 — Mexico Bridge (San Miguel de Allende · 180-day ceiling)</div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Wheels up Colorado</span>
+                    <span class="task-sub">Early May departure</span>
+                </div>
+            </div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell" style="justify-content:center"><div class="milestone"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Ariel's house (free)</span>
+                    <span class="task-sub">Zero rent · ~$400/mo burn</span>
+                </div>
+            </div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"><div class="bar green bar-start"></div></div>
+            <div class="gantt-cell"><div class="bar green bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar green bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar green bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar green bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar green bar-end"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Teaching: Preply + Facebook</span>
+                    <span class="task-sub">European timezone · offset burn</span>
+                </div>
+            </div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"><div class="bar blue bar-start"></div></div>
+            <div class="gantt-cell"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar blue bar-end"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Protect $10K floor</span>
+                    <span class="task-sub">Near-zero net burn target</span>
+                </div>
+            </div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"><div class="bar gold bar-start"></div></div>
+            <div class="gantt-cell"><div class="bar gold bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar gold bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar gold bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar gold bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar gold bar-end"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Oct: Mexico exit (day 179)</span>
+                    <span class="task-sub">Hard visa ceiling</span>
+                </div>
+            </div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell" style="justify-content:center"><div class="milestone"></div></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <!-- PHASE 3: NOMAD -->
+        <div class="gantt-section-label">Phase 3 — Nomad Bridge (Oct 2026 – May 2027 · destination TBD: Albania / France)</div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Europe: nomad phase</span>
+                    <span class="task-sub">Albania (non-Schengen) · or France</span>
+                </div>
+            </div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"><div class="bar teal bar-start"></div></div>
+            <div class="gantt-cell"><div class="bar teal bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar teal bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar teal bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar teal bar-mid"></div></div>
+            <div class="gantt-cell hinge-col"><div class="bar teal bar-end"></div></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Teaching continues</span>
+                    <span class="task-sub">Preply · fully European TZ</span>
+                </div>
+            </div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"><div class="bar blue bar-start"></div></div>
+            <div class="gantt-cell"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar blue bar-mid"></div></div>
+            <div class="gantt-cell hinge-col"><div class="bar blue bar-end"></div></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">SS application submitted</span>
+                    <span class="task-sub">Remotely · US bank account</span>
+                </div>
+            </div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"><div class="bar gold bar-start"></div></div>
+            <div class="gantt-cell"><div class="bar gold bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar gold bar-mid"></div></div>
+            <div class="gantt-cell"><div class="bar gold bar-end"></div></div>
+            <div class="gantt-cell hinge-col"></div>
+        </div>
+
+        <!-- PHASE 4: THE HINGE -->
+        <div class="gantt-section-label">Phase 4 — The Hinge · Social Security Activates · Permanent Machine Possible</div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">★ SS activates (age 62)</span>
+                    <span class="task-sub">~$1,750/mo · locked in · cannot be taken away</span>
+                </div>
+            </div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col" style="justify-content:center"><div class="milestone teal"></div></div>
+        </div>
+
+        <div class="gantt-row">
+            <div class="gantt-task">
+                <div>
+                    <span class="task-name">Bank 3 months SS statements</span>
+                    <span class="task-sub">Visa application evidence</span>
+                </div>
+            </div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell"></div>
+            <div class="gantt-cell hinge-col"><div class="bar green bar-full" style="opacity:0.4"></div></div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="legend-bar" style="background:var(--red)"></div> Decision/Assessment</div>
+            <div class="legend-item"><div class="legend-bar" style="background:var(--green)"></div> Housing / Financial Protection</div>
+            <div class="legend-item"><div class="legend-bar" style="background:var(--blue)"></div> Teaching Income</div>
+            <div class="legend-item"><div class="legend-bar" style="background:var(--teal)"></div> Travel / Nomad Phase</div>
+            <div class="legend-item"><div class="legend-bar" style="background:var(--gold)"></div> Financial / Logistics</div>
+            <div class="legend-item"><div class="legend-bar" style="background:var(--purple)"></div> The Boxes / Stub</div>
+            <div class="legend-item"><div class="legend-bar" style="background:var(--orange)"></div> Isabelle</div>
+            <div class="legend-item"><div class="legend-diamond" style="background:var(--red)"></div> Milestone / Decision Point</div>
+        </div>
+    </div>
+
+    <!-- OPEN QUESTIONS -->
+    <div class="section-divider">Open Questions — Plan Red</div>
+
+    <div class="questions-grid">
+        <div class="q-card red">
+            <div class="q-label">Critical Unknown</div>
+            <h3>Is Ariel Actually Viable?</h3>
+            <p>The WhatsApp group incident (Feb 20) raised real concerns. Cognitive drift is real. Catherine would be her only support — closest thing she has to a daughter. One honest conversation needed in March to assess.</p>
+            <div class="tag red">Decide by Mar 31</div>
+        </div>
+
+        <div class="q-card orange">
+            <div class="q-label">Asset Disposition</div>
+            <h3>Isabelle's Fate</h3>
+            <p>Margaret: pattern confirmed, dead air, off the table. DVR repair approved — she runs through March for mobility. If Red activates: sell to Miata enthusiast by April 15. Grief but relief. Baby goes somewhere safe.</p>
+            <div class="tag orange">Miata Enthusiast · Apr 15</div>
+        </div>
+
+        <div class="q-card gold">
+            <div class="q-label">The Stub</div>
+            <h3>What Comes Forward</h3>
+            <p>Two checked bags + carry-on. Scan 200+ photos for digital backup. Stub concept: not delete everything — a seed that can reinitialize a home. What's in the stub is still unresolved. Sorting now through April.</p>
+            <div class="tag gold">Not Zero · A Seed</div>
+        </div>
+
+        <div class="q-card teal">
+            <div class="q-label">October Decision Point</div>
+            <h3>Mexico Exit → Where?</h3>
+            <p>Albania (non-Schengen, 1 year, cheap burn, resets Schengen clock) vs. France direct (where she actually wants to be, Schengen 90-day limit applies). This decision shapes the entire nomad phase.</p>
+            <div class="tag teal">Albania vs France · TBD</div>
+        </div>
+
+        <div class="q-card red">
+            <div class="q-label">Storage Gap</div>
+            <h3>The Stub Goes Where?</h3>
+            <p>Marta: not available. Wanda: inappropriate. Joseph: off-grid, unreliable. Margaret: ghosts. If stub cannot be stored, it must fit in luggage or be released. No solution yet.</p>
+            <div class="tag red">Unsolved</div>
+        </div>
+
+        <div class="q-card gold">
+            <div class="q-label">Visa Target</div>
+            <h3>VLS-TS or D7?</h3>
+            <p>France VLS-TS: €1,823/mo income requirement, SS just clears it, 15-day processing. Portugal D7: €11K in Portuguese bank + €920/mo income, 6-18 month backlog. Application window: Aug/Sept 2027 with 3 months SS statements.</p>
+            <div class="tag gold">France Preferred · 2027</div>
+        </div>
+    </div>
+
+    <div class="journal-strip">
+        <div class="j-label">The Logic of Plan Red</div>
+        <p>Mexico is not the destination. Mexico is the bridge that keeps the destination possible. The math is simple: $11K in Colorado lasts 3 months. $11K in San Miguel lasts 13 months. The bridge buys the time. The time buys the visa. The visa buys France. Karen pointed toward Paris. That's where this ends.</p>
+    </div>
+
+    <div class="footer">
+        <div class="footer-left">Plan Red · War Plan Series · Generated Feb 26, 2026 · Loveland CO</div>
+        <div class="footer-right">Assessment: March 31. Notice: April 1. Wheels up: May.</div>
+    </div>
+
+</div>
+</body>
+</html>
