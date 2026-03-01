@@ -397,6 +397,64 @@
             text-align: center;
         }
 
+        /* MINI WHEEL CUSTOMIZATION */
+        .mini-customize {
+            width: 100%;
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .mini-customize input[type="text"],
+        .mini-customize input[type="date"] {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(200,147,10,0.25);
+            color: var(--parchment);
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 1px;
+            padding: 5px 8px;
+            width: 100%;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .mini-customize input[type="text"]::placeholder {
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .mini-customize input:focus {
+            border-color: rgba(200,147,10,0.6);
+        }
+
+        .mini-customize input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.6) sepia(1) saturate(2) hue-rotate(5deg);
+            cursor: pointer;
+        }
+
+        .mini-edit-btn {
+            background: none;
+            border: 1px solid rgba(200,147,10,0.2);
+            color: var(--muted);
+            font-family: 'DM Mono', monospace;
+            font-size: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 4px 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+            margin-top: 2px;
+        }
+
+        .mini-edit-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
         /* FOOTER */
         .footer {
             text-align: center;
@@ -514,27 +572,8 @@
 
     <!-- MINI WHEELS: SAMPLE MOMENTS -->
     <div class="mini-wheels-title">Sample Positions · Selected Dates</div>
-    <div class="mini-wheels">
-        <div class="mini-wheel-wrap">
-            <div class="mini-label">Today</div>
-            <svg width="180" height="180" viewBox="0 0 180 180" class="miniWheel" data-day="59" data-color="#7aab6e"></svg>
-            <div class="mini-date">Feb 28 · Ostara Rising 4</div>
-        </div>
-        <div class="mini-wheel-wrap">
-            <div class="mini-label">Ostara Sabbat</div>
-            <svg width="180" height="180" viewBox="0 0 180 180" class="miniWheel" data-day="79" data-color="#7aab6e"></svg>
-            <div class="mini-date">Mar 20 · Peak</div>
-        </div>
-        <div class="mini-wheel-wrap">
-            <div class="mini-label">Wheels Up</div>
-            <svg width="180" height="180" viewBox="0 0 180 180" class="miniWheel" data-day="121" data-color="#e87a3a"></svg>
-            <div class="mini-date">May 1 · Beltane Rising</div>
-        </div>
-        <div class="mini-wheel-wrap">
-            <div class="mini-label">SS Activates</div>
-            <svg width="180" height="180" viewBox="0 0 180 180" class="miniWheel" data-day="121" data-color="#c8930a"></svg>
-            <div class="mini-date">May 2027 · Beltane</div>
-        </div>
+    <div class="mini-wheels" id="miniWheelsContainer">
+        <!-- mini wheels rendered by JS -->
     </div>
 
     <div class="divider">✦ ✦ ✦</div>
@@ -941,28 +980,222 @@ buildWheel(document.getElementById('mainWheel'), 210, 210, 195, today, info ? in
 // Populate card
 if (info) populateTodayCard(info, today);
 
-// Mini wheels — today + key personal milestones (hardcoded dates, still meaningful)
-const miniConfigs = [
-    { date: today, color: info ? info.house.color : '#e8b84b', label: 'Today', sublabel: null },
-    { date: new Date(refYear, 2, 20),  color: '#7aab6e', label: 'Ostara Sabbat', sublabel: 'Mar 20 · Peak' },
-    { date: new Date(2026, 4, 1),  color: '#e87a3a', label: 'Wheels Up',     sublabel: 'May 2026 · Beltane' },
-    { date: new Date(2027, 4, 1),  color: '#c8930a', label: 'SS Activates',  sublabel: 'May 2027 · Beltane' },
-];
+// ─── MINI WHEELS — CUSTOMIZABLE WITH LOCALSTORAGE ────────────────────────────
 
-document.querySelectorAll('.miniWheel').forEach((svg, i) => {
-    const cfg = miniConfigs[i];
-    const yr = cfg.date.getFullYear();
-    buildWheel(svg, 90, 90, 82, cfg.date, cfg.color, yr);
+const STORAGE_KEY = 'wheelOfYear_miniDates';
 
-    // Update sublabel if null (today)
-    if (cfg.sublabel === null) {
-        const info2 = getCurrentHouse(cfg.date);
-        if (info2) {
-            svg.closest('.mini-wheel-wrap').querySelector('.mini-date').textContent =
-                `${formatDateShort(cfg.date)} · ${info2.house.name} ${info2.isRising ? 'Rising' : 'Falling'} ${info2.dayIn}`;
+function dateToInputString(date) {
+    if (!date) return '';
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+// Compute next three sabbats from today
+function getNextSabbats(n) {
+    const results = [];
+    // Check this year and next to get enough future sabbats
+    for (let yr = today.getFullYear(); yr <= today.getFullYear() + 2 && results.length < n; yr++) {
+        const sabbats = getSabbats(yr);
+        for (const s of sabbats) {
+            if (s.sabbat > today && results.length < n) {
+                results.push(s);
+            }
         }
     }
-});
+    return results;
+}
+
+const nextSabbats = getNextSabbats(3);
+
+const defaultMinis = [
+    { label: 'Today', date: null, sublabel: null, locked: true },
+    ...nextSabbats.map(s => ({
+        label: s.name + ' Sabbat',
+        date: dateToInputString(s.sabbat),
+        sublabel: null,
+        locked: false,
+    })),
+];
+
+function loadMinis() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return defaultMinis.map(d => ({...d}));
+        const parsed = JSON.parse(saved);
+        // Merge: always keep slot 0 as Today (locked)
+        return defaultMinis.map((def, i) => {
+            if (def.locked) return {...def};
+            return parsed[i] ? {...def, label: parsed[i].label || def.label, date: parsed[i].date || def.date, sublabel: parsed[i].sublabel || def.sublabel} : {...def};
+        });
+    } catch(e) { return defaultMinis.map(d => ({...d})); }
+}
+
+function saveMinis(minis) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(
+            minis.map(m => ({ label: m.label, date: m.date, sublabel: m.sublabel }))
+        ));
+    } catch(e) {}
+}
+
+function dateFromString(str) {
+    if (!str) return null;
+    const [y, m, d] = str.split('-').map(Number);
+    return new Date(y, m - 1, d);
+}
+
+function renderMiniWheels(minis) {
+    const container = document.getElementById('miniWheelsContainer');
+    container.innerHTML = '';
+
+    minis.forEach((cfg, i) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'mini-wheel-wrap';
+
+        const isToday = cfg.locked;
+        const dateObj = isToday ? today : (cfg.date ? dateFromString(cfg.date) : null);
+
+        // Determine house info and color
+        let color = '#e8b84b';
+        let sublabelText = cfg.sublabel || '';
+        if (dateObj) {
+            const hInfo = getCurrentHouse(dateObj);
+            if (hInfo) {
+                color = hInfo.house.color;
+                if (isToday || !cfg.sublabel) {
+                    sublabelText = `${formatDateShort(dateObj)} · ${hInfo.house.name} ${hInfo.isRising ? 'Rising' : 'Falling'} ${hInfo.dayIn}`;
+                }
+            }
+        }
+
+        // Label
+        const labelEl = document.createElement('div');
+        labelEl.className = 'mini-label';
+        labelEl.textContent = cfg.label;
+
+        // SVG wheel
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '180'); svg.setAttribute('height', '180');
+        svg.setAttribute('viewBox', '0 0 180 180');
+        svg.classList.add('miniWheel');
+        if (dateObj) {
+            buildWheel(svg, 90, 90, 82, dateObj, color, dateObj.getFullYear());
+        }
+
+        // For non-Today wheels, add a faint today needle
+        if (!isToday && dateObj) {
+            const NS = 'http://www.w3.org/2000/svg';
+            const todayAng = dayToAngle(today, dateObj.getFullYear());
+            const nOuter = polarToCart(90, 90, 82 * 0.88, todayAng);
+            const nInner = polarToCart(90, 90, 82 * 0.26, todayAng);
+            const ghostLine = document.createElementNS(NS, 'line');
+            ghostLine.setAttribute('x1', nInner.x); ghostLine.setAttribute('y1', nInner.y);
+            ghostLine.setAttribute('x2', nOuter.x); ghostLine.setAttribute('y2', nOuter.y);
+            ghostLine.setAttribute('stroke', 'rgba(244,238,216,0.25)');
+            ghostLine.setAttribute('stroke-width', '1.5');
+            ghostLine.setAttribute('stroke-linecap', 'round');
+            ghostLine.setAttribute('stroke-dasharray', '3,3');
+            svg.appendChild(ghostLine);
+            const ghostDot = document.createElementNS(NS, 'circle');
+            ghostDot.setAttribute('cx', nOuter.x); ghostDot.setAttribute('cy', nOuter.y);
+            ghostDot.setAttribute('r', '3');
+            ghostDot.setAttribute('fill', 'rgba(244,238,216,0.35)');
+            ghostDot.setAttribute('stroke', 'rgba(244,238,216,0.2)');
+            ghostDot.setAttribute('stroke-width', '1');
+            svg.appendChild(ghostDot);
+        }
+
+        // Sublabel / date display
+        const dateEl = document.createElement('div');
+        dateEl.className = 'mini-date';
+        dateEl.textContent = sublabelText;
+
+        wrap.appendChild(labelEl);
+        wrap.appendChild(svg);
+        wrap.appendChild(dateEl);
+
+        // Edit button + form (not for Today)
+        if (!isToday) {
+            const editBtn = document.createElement('button');
+            editBtn.className = 'mini-edit-btn';
+            editBtn.textContent = '✦ customize';
+
+            const form = document.createElement('div');
+            form.className = 'mini-customize';
+            form.style.display = 'none';
+
+            const labelInput = document.createElement('input');
+            labelInput.type = 'text';
+            labelInput.placeholder = 'Label (e.g. Wheels Up)';
+            labelInput.value = cfg.label;
+            labelInput.maxLength = 30;
+
+            const dateInput = document.createElement('input');
+            dateInput.type = 'date';
+            dateInput.value = cfg.date || '';
+
+            const noteInput = document.createElement('input');
+            noteInput.type = 'text';
+            noteInput.placeholder = 'Note (e.g. May 1 · Beltane)';
+            noteInput.value = cfg.sublabel || '';
+            noteInput.maxLength = 40;
+
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'mini-edit-btn';
+            saveBtn.textContent = '✦ save';
+
+            const resetBtn = document.createElement('button');
+            resetBtn.className = 'mini-edit-btn';
+            resetBtn.textContent = '✦ reset to default';
+            resetBtn.style.opacity = '0.6';
+
+            form.appendChild(labelInput);
+            form.appendChild(dateInput);
+            form.appendChild(noteInput);
+            form.appendChild(saveBtn);
+            form.appendChild(resetBtn);
+
+            editBtn.addEventListener('click', () => {
+                const showing = form.style.display !== 'none';
+                form.style.display = showing ? 'none' : 'flex';
+                editBtn.textContent = showing ? '✦ customize' : '✦ cancel';
+            });
+
+            saveBtn.addEventListener('click', () => {
+                const newLabel = labelInput.value.trim() || cfg.label;
+                const newDate  = dateInput.value || cfg.date;
+                const newNote  = noteInput.value.trim();
+
+                minis[i].label = newLabel;
+                minis[i].date  = newDate;
+                minis[i].sublabel = newNote || null;
+
+                saveMinis(minis);
+                renderMiniWheels(minis);
+            });
+
+            resetBtn.addEventListener('click', () => {
+                const def = defaultMinis[i];
+                minis[i].label    = def.label;
+                minis[i].date     = def.date;
+                minis[i].sublabel = def.sublabel;
+                saveMinis(minis);
+                renderMiniWheels(minis);
+            });
+
+            wrap.appendChild(editBtn);
+            wrap.appendChild(form);
+        }
+
+        container.appendChild(wrap);
+    });
+}
+
+// Init mini wheels
+const minis = loadMinis();
+renderMiniWheels(minis);
 </script>
 </body>
 </html>
