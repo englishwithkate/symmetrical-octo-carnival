@@ -420,6 +420,31 @@
             margin: 40px 0;
             opacity: 0.5;
         }
+
+        /* ── RESPONSIVE ─────────────────────────────────── */
+        @media (max-width: 700px) {
+            body { padding: 24px 14px 60px; }
+            .header h1 { font-size: 26px; letter-spacing: 2px; }
+            .header .sub { font-size: 12px; letter-spacing: 1px; }
+            .header::before, .header::after { display: none; }
+            .wheel-section { grid-template-columns: 1fr; gap: 20px; }
+            svg.wheel { width: 300px !important; height: 300px !important; }
+            .today-card { padding: 18px 14px; }
+            .tc-house { font-size: 22px; }
+            .tc-phase { font-size: 15px; margin-bottom: 16px; }
+            .tc-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+            .stat-value { font-size: 17px; }
+            .houses-grid { grid-template-columns: 1fr 1fr; }
+            .mini-wheels { grid-template-columns: 1fr 1fr; gap: 14px; }
+            .mini-wheels svg { width: 130px !important; height: 130px !important; }
+            .ref-title, .mini-wheels-title { font-size: 11px; letter-spacing: 2px; }
+            .divider { font-size: 12px; letter-spacing: 8px; margin: 28px 0; }
+        }
+        @media (max-width: 420px) {
+            svg.wheel { width: 260px !important; height: 260px !important; }
+            .houses-grid { grid-template-columns: 1fr; }
+            .mini-wheels svg { width: 110px !important; height: 110px !important; }
+        }
     </style>
 </head>
 <body>
